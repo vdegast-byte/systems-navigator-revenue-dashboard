@@ -23,21 +23,10 @@
         <button data-view="import">Import & beheer</button>
       </nav>
 
-      <div class="sidebar-section">
-        <div class="section-title">Filters</div>
-        <label>Van<input id="filterStart" type="date"></label>
-        <label>Tot<input id="filterEnd" type="date"></label>
-        <label>Bedrijf<select id="filterCompany" multiple></select></label>
-        <label>Klant<select id="filterCustomer" multiple></select></label>
-        <label>Account<select id="filterAccount" multiple></select></label>
-        <label>Industrie<select id="filterIndustry" multiple></select></label>
-        <label>Productgroep<select id="filterProductGroup" multiple></select></label>
-        <label>Producttype<select id="filterProductType" multiple></select></label>
-        <label>Land<select id="filterCountry" multiple></select></label>
-        <label>Leverancier<select id="filterSupplier" multiple></select></label>
-        <label>Tag<select id="filterTag" multiple></select></label>
-        <label>Zoeken<input id="filterSearch" type="search" placeholder="klant, factuur, omschrijving"></label>
-        <button id="clearFilters" class="secondary full">Filters wissen</button>
+      <div class="sidebar-note">
+        <span class="status-dot"></span>
+        Testomgeving
+        <small>Data blijft lokaal in je browser.</small>
       </div>
     </aside>
 
@@ -52,6 +41,77 @@
           <button id="exportFiltered" class="secondary">Export CSV</button>
         </div>
       </header>
+
+      <section class="filter-shell" id="filterShell" aria-label="Dashboardfilters">
+        <div class="filter-primary">
+          <div class="filter-field period-field">
+            <span class="filter-label">Periode</span>
+            <select id="filterPreset" class="filter-select-single">
+              <option value="all">Alle perioden</option>
+              <option value="ytd">Dit jaar (YTD)</option>
+              <option value="previous">Vorig jaar</option>
+              <option value="last12">Laatste 12 maanden</option>
+              <option value="custom">Aangepaste periode</option>
+            </select>
+          </div>
+
+          <div class="filter-field wide">
+            <span class="filter-label">Bedrijf</span>
+            <select id="filterCompany" multiple data-label="Bedrijf" data-placeholder="Alle bedrijven"></select>
+          </div>
+          <div class="filter-field customer-filter">
+            <span class="filter-label">Klant</span>
+            <select id="filterCustomer" multiple data-label="Klant" data-placeholder="Alle klanten"></select>
+          </div>
+          <div class="filter-field wide">
+            <span class="filter-label">Productgroep</span>
+            <select id="filterProductGroup" multiple data-label="Productgroep" data-placeholder="Alle productgroepen"></select>
+          </div>
+          <div class="filter-field wide">
+            <span class="filter-label">Producttype</span>
+            <select id="filterProductType" multiple data-label="Producttype" data-placeholder="Alle producttypes"></select>
+          </div>
+
+          <button id="moreFilters" class="filter-more secondary" type="button" aria-expanded="false">
+            <span>Meer filters</span><span class="chevron">⌄</span>
+          </button>
+          <button id="clearFilters" class="filter-clear" type="button">Filters wissen</button>
+        </div>
+
+        <div id="advancedFilters" class="filter-advanced hidden">
+          <div class="filter-field date-field">
+            <span class="filter-label">Van</span>
+            <input id="filterStart" type="date">
+          </div>
+          <div class="filter-field date-field">
+            <span class="filter-label">Tot</span>
+            <input id="filterEnd" type="date">
+          </div>
+          <div class="filter-field">
+            <span class="filter-label">Account</span>
+            <select id="filterAccount" multiple data-label="Account" data-placeholder="Alle accounts"></select>
+          </div>
+          <div class="filter-field">
+            <span class="filter-label">Industrie</span>
+            <select id="filterIndustry" multiple data-label="Industrie" data-placeholder="Alle industrieën"></select>
+          </div>
+          <div class="filter-field">
+            <span class="filter-label">Land</span>
+            <select id="filterCountry" multiple data-label="Land" data-placeholder="Alle landen"></select>
+          </div>
+          <div class="filter-field">
+            <span class="filter-label">Leverancier</span>
+            <select id="filterSupplier" multiple data-label="Leverancier" data-placeholder="Alle leveranciers"></select>
+          </div>
+          <div class="filter-field search-field">
+            <span class="filter-label">Zoeken</span>
+            <input id="filterSearch" type="search" placeholder="Klant, factuur of omschrijving">
+          </div>
+        </div>
+
+        <div id="activeFilters" class="active-filters hidden" aria-live="polite"></div>
+        <select id="filterTag" multiple hidden></select>
+      </section>
 
       <section id="emptyState" class="empty hidden">
         <div class="empty-icon">↥</div>
@@ -74,5 +134,6 @@
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js" integrity="sha512-XMVd28F1oH/O71fzwBnV7HucLxVwtxf26XV8P4wPk26EDxuGZ91N8bsOttmnomcCD3CS5ZMRL50H0GgOHvegtg==" crossorigin="anonymous"></script>
   <script src="https://cdn.plot.ly/plotly-3.3.1.min.js" integrity="sha384-SsOMajmLeeY81sOzGCn88NjTdDwa+nz3Lb1ZNouSdXAz5TBsvD+Pwgf1Iqtxns6c" crossorigin="anonymous"></script>
   <script src="app.js"></script>
+  <script src="filter-ui.js"></script>
 </body>
 </html>
