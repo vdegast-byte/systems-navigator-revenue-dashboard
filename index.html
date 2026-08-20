@@ -16,14 +16,20 @@
     <aside class="sidebar">
       <div class="brand"><div class="brand-mark">SN</div><div><strong>Omzetanalyse</strong><span>Systems Navigator</span></div></div>
       <nav class="nav" id="mainNav">
-        <button data-view="dashboard" class="active">Dashboard</button>
-        <button data-view="saas">SaaS analyse</button>
-        <button data-view="dropboardForecast">Dropboard forecast</button>
-        <button data-view="snForecast">SN SaaS forecast</button>
-        <button data-view="totalForecast">Total forecast</button>
-        <button data-view="analysis">Analyses</button>
-        <button data-view="invoices">Facturen & tags</button>
-        <button data-view="import">Import & beheer</button>
+        <div class="nav-group">
+          <div class="nav-section-label">Actual Revenue</div>
+          <button data-view="dashboard" class="active">Dashboard</button>
+          <button data-view="saas">SaaS analyse</button>
+          <button data-view="analysis">Analyses</button>
+          <button data-view="invoices">Facturen & tags</button>
+          <button data-view="import">Import & beheer</button>
+        </div>
+        <div class="nav-group nav-group-forecast">
+          <div class="nav-section-label">Contracts &amp; Forecast</div>
+          <button data-view="dropboardForecast">Dropboard forecast</button>
+          <button data-view="snForecast">SN SaaS forecast</button>
+          <button data-view="totalForecast">Total forecast</button>
+        </div>
       </nav>
       <div class="sidebar-note"><span class="status-dot"></span>Testomgeving<small>Data blijft lokaal in je browser.</small></div>
     </aside>
