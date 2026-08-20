@@ -9,6 +9,7 @@
   function growth(current,previous){return previous?((current-previous)/Math.abs(previous)):null}
   function customer(r){return clean(r.customer||r.account||'Onbekend')||'Onbekend'}
   function shiftYear(date,offset){if(!date)return'';const d=new Date(`${date}T12:00:00Z`),m=d.getUTCMonth();d.setUTCFullYear(d.getUTCFullYear()+offset);if(d.getUTCMonth()!==m)d.setUTCDate(0);return d.toISOString().slice(0,10)}
+  function isDropboardGroup(r){return clean(r.group).toLowerCase()==='dropboard'}
   function typeColor(type){
     const t=String(type||'').trim().toLowerCase();
     if(!t||t==='onbekend'||t==='unknown')return brand.lightGrey;
@@ -21,10 +22,26 @@
   }
   function dimensionColor(i){return [brand.teal,brand.deepTeal,brand.dark,brand.grey,brand.coral,brand.lightGrey][i%6]}
 
+  function enforceDropboardFilterUI(){
+    const select=$('filterProductGroup');
+    if(!select)return;
+    let found=false;
+    [...select.options].forEach(o=>{
+      const match=clean(o.value).toLowerCase()==='dropboard';
+      o.selected=match;
+      if(match)found=true;
+    });
+    if(found){
+      if(typeof syncTrigger==='function')syncTrigger(select);
+      if(typeof updateChips==='function')updateChips();
+    }
+  }
+
   function dropboardBaseRows(){
     const f=filters(),quarters=selected('filterQuarter');
     return state.rows.filter(r=>{
-      if(!/dropboard/i.test(clean(r.group)))return false;
+      // Dedicated dashboard: only exact Product group = Dropboard is allowed.
+      if(!isDropboardGroup(r))return false;
       for(const k of ['company','customer','account','industry','type','country','supplier'])if(f[k]?.length&&!f[k].includes(r[k]))return false;
       if(quarters.length&&!quarters.includes(clean(r.quarter)||quarter(r.date)))return false;
       if(f.q&&!`${r.customer} ${r.account} ${r.invoice} ${r.description}`.toLowerCase().includes(f.q))return false;
@@ -60,7 +77,7 @@
   function renderDashboard(){
     const base=dropboardBaseRows(),focus=focusPeriod(base),root=$('dropboardRevenueView');
     if(!root)return;
-    if(!focus){root.innerHTML='<div class="card">Geen Dropboard-omzet beschikbaar binnen de gekozen filters.</div>';return}
+    if(!focus){root.innerHTML='<div class="card">Geen omzetregels gevonden met exact Product group = Dropboard binnen de gekozen filters.</div>';return}
     const current=base.filter(r=>r.date>=focus.start&&r.date<=focus.end),prevStart=shiftYear(focus.start,-1),prevEnd=shiftYear(focus.end,-1),previous=base.filter(r=>r.date>=prevStart&&r.date<=prevEnd);
     if(!current.length){root.innerHTML='<div class="card">Geen Dropboard-omzet beschikbaar voor deze periode.</div>';return}
 
@@ -68,7 +85,7 @@
     const types=aggregate(current,r=>clean(r.type)||'Onbekend'),topType=types[0]||['–',0];
 
     root.innerHTML=`
-      <div class="dropboard-revenue-head card"><div><div class="eyebrow">Actual revenue · Dropboard</div><h2>Dropboard inkomsten</h2><p>Gerealiseerde Dropboard-omzet voor <strong>${esc(focus.label)}</strong>, met dezelfde filters als het hoofd-dashboard.</p></div><div class="dropboard-revenue-badge">Productgroep · Dropboard</div></div>
+      <div class="dropboard-revenue-head card"><div><div class="eyebrow">Actual revenue · Dropboard</div><h2>Dropboard inkomsten</h2><p>Gerealiseerde omzet met exact <strong>Product group = Dropboard</strong> voor <strong>${esc(focus.label)}</strong>.</p></div><div class="dropboard-revenue-badge">Productgroep · Dropboard</div></div>
       <div class="grid dropboard-revenue-metrics">
         <div class="metric"><div class="label">Dropboard omzet</div><div class="value">${eur(total)}</div><div class="sub">${eur(prior)} in vergelijkbare periode vorig jaar</div></div>
         <div class="metric"><div class="label">YoY groei</div><div class="value ${yoy==null?'':yoy>=0?'kpi-positive':'kpi-negative'}">${yoy==null?'–':percent(yoy)}</div><div class="sub">Vergelijking op gelijke kalenderperiode</div></div>
@@ -113,6 +130,7 @@
     $('emptyState').classList.add('hidden');
     $('filterShell').classList.remove('hidden');$('filterShell').classList.remove('mgmt-mode');
     document.querySelector('.year-filter')?.classList.add('hidden');
+    enforceDropboardFilterUI();
     $('quickImport').classList.remove('hidden');$('exportFiltered').classList.remove('hidden');
     $('dropboardRevenueView').classList.remove('hidden');renderDashboard();
   };
