@@ -32,6 +32,15 @@
       labels.push(customer);colors.push(groupColors.get(dominant)||palette[0]);
     });
     if(labels.length)try{Plotly.restyle(target,{'marker.colors':[colors]});}catch(e){console.debug('Brand treemap restyle skipped',e)}
+
+    const legend=document.querySelector('.mgmt-product-legend');
+    if(legend){
+      legend.querySelectorAll('span').forEach(item=>{
+        const group=(item.textContent||'').trim();
+        const swatch=item.querySelector('i');
+        if(swatch)swatch.style.background=groupColors.get(group)||palette[0];
+      });
+    }
   }
 
   mgmtRender=function(){
