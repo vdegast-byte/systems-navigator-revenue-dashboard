@@ -26,6 +26,19 @@ function mgmtQuarterRows(base,year,q,cutoff,currentQ){
     return true;
   });
 }
+function mgmtCustomerMix(rows){
+  const totals=new Map(),mix=new Map();
+  for(const r of rows){
+    const customer=mgmtCustomer(r),group=clean(r.group)||'Onbekend',value=Number(r.revenue)||0;
+    totals.set(customer,(totals.get(customer)||0)+value);
+    if(!mix.has(customer))mix.set(customer,new Map());
+    const gm=mix.get(customer);gm.set(group,(gm.get(group)||0)+value);
+  }
+  return [...totals.entries()].filter(([,value])=>value>0).map(([customer,value])=>{
+    const groups=[...mix.get(customer).entries()].sort((a,b)=>b[1]-a[1]);
+    return{customer,value,group:groups[0]?.[0]||'Onbekend'};
+  }).sort((a,b)=>b.value-a.value);
+}
 function mgmtRender(){
   const base=mgmtBaseRows(),year=mgmtYear(base),currentRowsAll=base.filter(r=>(r.date||'').startsWith(String(year))),dates=currentRowsAll.map(r=>r.date).filter(Boolean).sort();
   document.querySelectorAll('.view').forEach(e=>e.classList.add('hidden'));
@@ -40,8 +53,11 @@ function mgmtRender(){
   const current=currentRowsAll.filter(r=>r.date<=lastDate),previous=base.filter(r=>(r.date||'').startsWith(String(previousYear))&&r.date<=priorCutoff);
   const curRev=mgmtRevenue(current),prevRev=mgmtRevenue(previous),growth=mgmtGrowth(curRev,prevRev);
   const customers=mgmtAggregate(current,mgmtCustomer),productGroups=mgmtAggregate(current,r=>clean(r.group)||'Onbekend'),previousGroups=mgmtAggregate(previous,r=>clean(r.group)||'Onbekend');
-  const positiveCustomers=[...customers.entries()].filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]),products=[...productGroups.entries()].sort((a,b)=>b[1]-a[1]);
+  const customerMix=mgmtCustomerMix(current),products=[...productGroups.entries()].sort((a,b)=>b[1]-a[1]);
   const avgCustomer=customers.size?curRev/customers.size:0,topProduct=products[0]||['–',0];
+  const palette=['#3157d5','#20a17a','#e29536','#8a63d2','#d85a72','#4098c7','#6b8f3e','#a56a43','#6b7280','#c252b2','#4f7f91','#9b7c2f'];
+  const groupColors=new Map(products.map(([name],i)=>[name,palette[i%palette.length]]));
+  const legendGroups=[...new Set(customerMix.map(x=>x.group))].sort((a,b)=>(productGroups.get(b)||0)-(productGroups.get(a)||0));
 
   root.innerHTML=`
     <div class="mgmt-hero card">
@@ -56,15 +72,16 @@ function mgmtRender(){
     </div>
 
     <div class="card">
-      <div class="mgmt-card-head"><div><h3>Omzet per kwartaal · ${year} versus ${previousYear}</h3><p>Voor het lopende kwartaal wordt dezelfde kalenderperiode van vorig jaar gebruikt.</p></div><span class="mgmt-yoy ${growth==null?'':growth>=0?'kpi-positive':'kpi-negative'}">YTD ${growth==null?'–':mgmtPercent(growth)}</span></div>
+      <div class="mgmt-card-head"><div><h3>Omzet per kwartaal · ${year} versus ${previousYear}</h3><p>Voor het lopende kwartaal wordt dezelfde kalenderperiode van vorig jaar gebruikt. De omzetwaarde staat in iedere kolom.</p></div><span class="mgmt-yoy ${growth==null?'':growth>=0?'kpi-positive':'kpi-negative'}">YTD ${growth==null?'–':mgmtPercent(growth)}</span></div>
       <div id="mgmtQuarterChart" class="mgmt-quarter-chart"></div>
     </div>
     <div class="spacer"></div>
 
     <div class="mgmt-grid">
       <div class="card">
-        <div class="mgmt-card-head"><div><h3>Omzet per klant · ${year} YTD</h3><p>De oppervlakte van ieder vlak is evenredig aan de gerealiseerde omzet van de klant.</p></div></div>
+        <div class="mgmt-card-head"><div><h3>Omzet per klant · ${year} YTD</h3><p>De oppervlakte geeft de klantomzet weer; de kleur geeft de grootste productgroep van die klant aan.</p></div></div>
         <div id="mgmtCustomerTreemap" class="mgmt-treemap"></div>
+        <div class="mgmt-product-legend">${legendGroups.map(group=>`<span><i style="background:${groupColors.get(group)||'#6b7280'}"></i>${esc(group)}</span>`).join('')}</div>
         ${[...customers.values()].some(v=>v<=0)?'<div class="mgmt-note">Klanten met een netto omzet van €0 of lager worden niet in de treemap weergegeven.</div>':''}
       </div>
       <div class="card">
@@ -80,12 +97,12 @@ function mgmtRender(){
     quarterPrevious.push(mgmtRevenue(mgmtQuarterRows(base,previousYear,q,cutPrevious,currentQ)));
   }
   Plotly.newPlot('mgmtQuarterChart',[
-    {type:'bar',name:String(previousYear),x:quarters,y:quarterPrevious,hovertemplate:`${previousYear} %{x}<br>€%{y:,.0f}<extra></extra>`},
-    {type:'bar',name:String(year),x:quarters,y:quarterCurrent,hovertemplate:`${year} %{x}<br>€%{y:,.0f}<extra></extra>`}
-  ],{barmode:'group',height:350,margin:{l:65,r:20,t:12,b:50},paper_bgcolor:'transparent',plot_bgcolor:'transparent',font:{family:'Inter,system-ui,sans-serif',color:'#445066'},legend:{orientation:'h',y:-.13},xaxis:{type:'category',gridcolor:'#edf0f5'},yaxis:{tickprefix:'€',tickformat:'~s',gridcolor:'#edf0f5',zeroline:false}},{displayModeBar:false,responsive:true});
+    {type:'bar',name:String(previousYear),x:quarters,y:quarterPrevious,text:quarterPrevious.map(v=>v?eur(v):''),texttemplate:'%{text}',textposition:'inside',insidetextanchor:'middle',textfont:{size:11},hovertemplate:`${previousYear} %{x}<br>€%{y:,.0f}<extra></extra>`},
+    {type:'bar',name:String(year),x:quarters,y:quarterCurrent,text:quarterCurrent.map(v=>v?eur(v):''),texttemplate:'%{text}',textposition:'inside',insidetextanchor:'middle',textfont:{size:11},hovertemplate:`${year} %{x}<br>€%{y:,.0f}<extra></extra>`}
+  ],{barmode:'group',height:350,margin:{l:65,r:20,t:12,b:50},paper_bgcolor:'transparent',plot_bgcolor:'transparent',font:{family:'Inter,system-ui,sans-serif',color:'#445066'},legend:{orientation:'h',y:-.13},uniformtext:{mode:'hide',minsize:9},xaxis:{type:'category',gridcolor:'#edf0f5'},yaxis:{tickprefix:'€',tickformat:'~s',gridcolor:'#edf0f5',zeroline:false}},{displayModeBar:false,responsive:true});
 
-  if(positiveCustomers.length){
-    Plotly.newPlot('mgmtCustomerTreemap',[{type:'treemap',labels:positiveCustomers.map(x=>x[0]),parents:positiveCustomers.map(()=>''),values:positiveCustomers.map(x=>x[1]),textinfo:'label+value+percent root',texttemplate:'<b>%{label}</b><br>€%{value:,.0f}<br>%{percentRoot:.1%}',hovertemplate:'%{label}<br>Omzet: €%{value:,.0f}<br>Aandeel: %{percentRoot:.1%}<extra></extra>',branchvalues:'total'}],{height:490,margin:{l:4,r:4,t:4,b:4},paper_bgcolor:'transparent'},{displayModeBar:false,responsive:true});
+  if(customerMix.length){
+    Plotly.newPlot('mgmtCustomerTreemap',[{type:'treemap',labels:customerMix.map(x=>x.customer),parents:customerMix.map(()=>''),values:customerMix.map(x=>x.value),marker:{colors:customerMix.map(x=>groupColors.get(x.group)||'#6b7280')},customdata:customerMix.map(x=>x.group),textinfo:'label+value+percent root',texttemplate:'<b>%{label}</b><br>€%{value:,.0f}<br>%{percentRoot:.1%}',hovertemplate:'%{label}<br>Productgroep: %{customdata}<br>Omzet: €%{value:,.0f}<br>Aandeel: %{percentRoot:.1%}<extra></extra>',branchvalues:'total'}],{height:490,margin:{l:4,r:4,t:4,b:4},paper_bgcolor:'transparent'},{displayModeBar:false,responsive:true});
   }else $('mgmtCustomerTreemap').innerHTML='<div class="muted">Geen positieve klantomzet voor deze selectie.</div>';
 }
 
