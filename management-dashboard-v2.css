@@ -1,0 +1,20 @@
+.mgmt-grid{grid-template-columns:minmax(0,1.3fr) minmax(390px,1fr)}
+.mgmt-product-type-chart{min-height:350px}
+.mgmt-date-range{margin-bottom:16px;padding:15px 18px 13px;border-top:3px solid #13adb6}
+.mgmt-range-head{display:flex;justify-content:space-between;align-items:flex-start;gap:20px}
+.mgmt-range-head h3{margin:2px 0 4px}.mgmt-range-head p{margin:0;color:var(--muted);font-size:12px}
+.mgmt-range-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+.mgmt-range-actions strong{font-size:12px;color:#0b4447;background:#e9f7f8;border:1px solid #b8e4e7;border-radius:4px;padding:7px 9px}
+.mgmt-range-actions button{padding:7px 10px;font-size:11px}
+.mgmt-range-control{position:relative;height:34px;margin:16px 2px 0}
+.mgmt-range-track,.mgmt-range-fill{position:absolute;left:0;right:0;top:15px;height:4px;border-radius:999px}
+.mgmt-range-track{background:#d6d7d9}.mgmt-range-fill{left:var(--range-left);right:calc(100% - var(--range-right));background:#13adb6}
+.mgmt-range-input{position:absolute;left:0;top:0;width:100%;height:34px;margin:0;background:transparent;pointer-events:none;-webkit-appearance:none;appearance:none;outline:none}
+.mgmt-range-input::-webkit-slider-runnable-track{height:4px;background:transparent}.mgmt-range-input::-moz-range-track{height:4px;background:transparent}
+.mgmt-range-input::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:18px;height:18px;margin-top:-7px;border-radius:50%;background:#13adb6;border:3px solid #fff;box-shadow:0 0 0 1px #0b4447,0 2px 5px rgba(52,57,65,.18);pointer-events:auto;cursor:grab}
+.mgmt-range-input::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:#13adb6;border:3px solid #fff;box-shadow:0 0 0 1px #0b4447,0 2px 5px rgba(52,57,65,.18);pointer-events:auto;cursor:grab}
+.mgmt-range-input:active::-webkit-slider-thumb{cursor:grabbing;background:#0b4447}.mgmt-range-input:active::-moz-range-thumb{cursor:grabbing;background:#0b4447}
+.mgmt-range-start{z-index:3}.mgmt-range-end{z-index:4}
+.mgmt-range-ends{display:flex;justify-content:space-between;color:#949797;font-size:10px;margin-top:-1px}.mgmt-range-ends span:first-child:before{content:'Start · '}.mgmt-range-ends span:last-child:before{content:'Laatste data · '}
+@media(max-width:1200px){.mgmt-grid{grid-template-columns:1fr}.mgmt-product-type-chart{min-height:330px}}
+@media(max-width:760px){.mgmt-range-head{flex-direction:column}.mgmt-range-actions{justify-content:flex-start}.mgmt-range-ends span:before{display:block}.mgmt-product-type-chart{min-height:360px}}
