@@ -7,6 +7,7 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.plot.ly https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'self'; frame-ancestors 'self'; form-action 'self'; upgrade-insecure-requests">
   <title>Systems Navigator – Omzetanalyse</title>
   <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="filters.css" />
 </head>
 <body>
   <div id="appShell">
@@ -54,59 +55,22 @@
               <option value="custom">Aangepaste periode</option>
             </select>
           </div>
-
-          <div class="filter-field wide">
-            <span class="filter-label">Bedrijf</span>
-            <select id="filterCompany" multiple data-label="Bedrijf" data-placeholder="Alle bedrijven"></select>
-          </div>
-          <div class="filter-field customer-filter">
-            <span class="filter-label">Klant</span>
-            <select id="filterCustomer" multiple data-label="Klant" data-placeholder="Alle klanten"></select>
-          </div>
-          <div class="filter-field wide">
-            <span class="filter-label">Productgroep</span>
-            <select id="filterProductGroup" multiple data-label="Productgroep" data-placeholder="Alle productgroepen"></select>
-          </div>
-          <div class="filter-field wide">
-            <span class="filter-label">Producttype</span>
-            <select id="filterProductType" multiple data-label="Producttype" data-placeholder="Alle producttypes"></select>
-          </div>
-
-          <button id="moreFilters" class="filter-more secondary" type="button" aria-expanded="false">
-            <span>Meer filters</span><span class="chevron">⌄</span>
-          </button>
+          <div class="filter-field wide"><span class="filter-label">Bedrijf</span><select id="filterCompany" multiple data-label="Bedrijf" data-placeholder="Alle bedrijven"></select></div>
+          <div class="filter-field customer-filter"><span class="filter-label">Klant</span><select id="filterCustomer" multiple data-label="Klant" data-placeholder="Alle klanten"></select></div>
+          <div class="filter-field wide"><span class="filter-label">Productgroep</span><select id="filterProductGroup" multiple data-label="Productgroep" data-placeholder="Alle productgroepen"></select></div>
+          <div class="filter-field wide"><span class="filter-label">Producttype</span><select id="filterProductType" multiple data-label="Producttype" data-placeholder="Alle producttypes"></select></div>
+          <button id="moreFilters" class="filter-more secondary" type="button" aria-expanded="false"><span>Meer filters</span><span class="chevron">⌄</span></button>
           <button id="clearFilters" class="filter-clear" type="button">Filters wissen</button>
         </div>
 
         <div id="advancedFilters" class="filter-advanced hidden">
-          <div class="filter-field date-field">
-            <span class="filter-label">Van</span>
-            <input id="filterStart" type="date">
-          </div>
-          <div class="filter-field date-field">
-            <span class="filter-label">Tot</span>
-            <input id="filterEnd" type="date">
-          </div>
-          <div class="filter-field">
-            <span class="filter-label">Account</span>
-            <select id="filterAccount" multiple data-label="Account" data-placeholder="Alle accounts"></select>
-          </div>
-          <div class="filter-field">
-            <span class="filter-label">Industrie</span>
-            <select id="filterIndustry" multiple data-label="Industrie" data-placeholder="Alle industrieën"></select>
-          </div>
-          <div class="filter-field">
-            <span class="filter-label">Land</span>
-            <select id="filterCountry" multiple data-label="Land" data-placeholder="Alle landen"></select>
-          </div>
-          <div class="filter-field">
-            <span class="filter-label">Leverancier</span>
-            <select id="filterSupplier" multiple data-label="Leverancier" data-placeholder="Alle leveranciers"></select>
-          </div>
-          <div class="filter-field search-field">
-            <span class="filter-label">Zoeken</span>
-            <input id="filterSearch" type="search" placeholder="Klant, factuur of omschrijving">
-          </div>
+          <div class="filter-field date-field"><span class="filter-label">Van</span><input id="filterStart" type="date"></div>
+          <div class="filter-field date-field"><span class="filter-label">Tot</span><input id="filterEnd" type="date"></div>
+          <div class="filter-field"><span class="filter-label">Account</span><select id="filterAccount" multiple data-label="Account" data-placeholder="Alle accounts"></select></div>
+          <div class="filter-field"><span class="filter-label">Industrie</span><select id="filterIndustry" multiple data-label="Industrie" data-placeholder="Alle industrieën"></select></div>
+          <div class="filter-field"><span class="filter-label">Land</span><select id="filterCountry" multiple data-label="Land" data-placeholder="Alle landen"></select></div>
+          <div class="filter-field"><span class="filter-label">Leverancier</span><select id="filterSupplier" multiple data-label="Leverancier" data-placeholder="Alle leveranciers"></select></div>
+          <div class="filter-field search-field"><span class="filter-label">Zoeken</span><input id="filterSearch" type="search" placeholder="Klant, factuur of omschrijving"></div>
         </div>
 
         <div id="activeFilters" class="active-filters hidden" aria-live="polite"></div>
@@ -114,8 +78,7 @@
       </section>
 
       <section id="emptyState" class="empty hidden">
-        <div class="empty-icon">↥</div>
-        <h2>Nog geen facturen geïmporteerd</h2>
+        <div class="empty-icon">↥</div><h2>Nog geen facturen geïmporteerd</h2>
         <p>Upload je bestaande Excelbestand en kies het tabblad <strong>Combined</strong>. De analyse gebeurt volledig in deze browser.</p>
         <button id="emptyImport">Excel / CSV importeren</button>
       </section>
