@@ -34,9 +34,24 @@
     }catch(e){console.debug('Quarter chart refinement skipped',e)}
   }
 
+  function refineCustomerMetric(){
+    if(typeof mgmtBaseRows!=='function'||typeof mgmtCustomer!=='function')return;
+    const year=Number(document.getElementById('filterYear')?.value);if(!year)return;
+    const base=mgmtBaseRows(),currentAll=base.filter(r=>(r.date||'').startsWith(String(year))),dates=currentAll.map(r=>r.date).filter(Boolean).sort();if(!dates.length)return;
+    const lastDate=dates.at(-1),priorYear=year-1,priorCutoff=`${priorYear}-${lastDate.slice(5)}`;
+    const current=currentAll.filter(r=>r.date<=lastDate),previous=base.filter(r=>(r.date||'').startsWith(String(priorYear))&&r.date<=priorCutoff);
+    const positiveCount=rows=>{const m=new Map();rows.forEach(r=>{const k=mgmtCustomer(r);m.set(k,(m.get(k)||0)+(Number(r.revenue)||0))});return [...m.values()].filter(v=>v>0).length};
+    const currentCount=positiveCount(current),previousCount=positiveCount(previous),total=current.reduce((s,r)=>s+(Number(r.revenue)||0),0);
+    const metric=[...document.querySelectorAll('.mgmt-metrics .metric')].find(card=>(card.querySelector('.label')?.textContent||'').includes('Klanten met omzet'));
+    if(!metric)return;
+    const value=metric.querySelector('.value'),sub=metric.querySelector('.sub');
+    if(value)value.textContent=String(currentCount);
+    if(sub)sub.textContent=`${previousCount} in ${priorYear} · gemiddeld ${eur(currentCount?total/currentCount:0)} per klant`;
+  }
+
   mgmtRender=function(){
     const result=baseMgmtRender.apply(this,arguments);
-    setTimeout(refineQuarterChart,0);
+    setTimeout(()=>{refineQuarterChart();refineCustomerMetric()},0);
     return result;
   };
 
