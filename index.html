@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="referrer" content="no-referrer" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.plot.ly https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'self'; frame-ancestors 'self'; form-action 'self'; upgrade-insecure-requests">
+  <title>Systems Navigator – Omzetanalyse</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="appShell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">SN</div>
+        <div><strong>Omzetanalyse</strong><span>Systems Navigator</span></div>
+      </div>
+
+      <nav class="nav" id="mainNav">
+        <button data-view="dashboard" class="active">Dashboard</button>
+        <button data-view="analysis">Analyses</button>
+        <button data-view="invoices">Facturen & tags</button>
+        <button data-view="import">Import & beheer</button>
+      </nav>
+
+      <div class="sidebar-section">
+        <div class="section-title">Filters</div>
+        <label>Van<input id="filterStart" type="date"></label>
+        <label>Tot<input id="filterEnd" type="date"></label>
+        <label>Bedrijf<select id="filterCompany" multiple></select></label>
+        <label>Klant<select id="filterCustomer" multiple></select></label>
+        <label>Account<select id="filterAccount" multiple></select></label>
+        <label>Industrie<select id="filterIndustry" multiple></select></label>
+        <label>Productgroep<select id="filterProductGroup" multiple></select></label>
+        <label>Producttype<select id="filterProductType" multiple></select></label>
+        <label>Land<select id="filterCountry" multiple></select></label>
+        <label>Leverancier<select id="filterSupplier" multiple></select></label>
+        <label>Tag<select id="filterTag" multiple></select></label>
+        <label>Zoeken<input id="filterSearch" type="search" placeholder="klant, factuur, omschrijving"></label>
+        <button id="clearFilters" class="secondary full">Filters wissen</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <h1 id="pageTitle">Dashboard</h1>
+          <p id="pageSubtitle">Gerealiseerde omzet op basis van geïmporteerde facturen.</p>
+        </div>
+        <div class="top-actions">
+          <button id="quickImport">Facturen importeren</button>
+          <button id="exportFiltered" class="secondary">Export CSV</button>
+        </div>
+      </header>
+
+      <section id="emptyState" class="empty hidden">
+        <div class="empty-icon">↥</div>
+        <h2>Nog geen facturen geïmporteerd</h2>
+        <p>Upload je bestaande Excelbestand en kies het tabblad <strong>Combined</strong>. De analyse gebeurt volledig in deze browser.</p>
+        <button id="emptyImport">Excel / CSV importeren</button>
+      </section>
+
+      <section id="dashboardView" class="view"></section>
+      <section id="analysisView" class="view hidden"></section>
+      <section id="invoicesView" class="view hidden"></section>
+      <section id="importView" class="view hidden"></section>
+    </main>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+  <input id="filePicker" type="file" accept=".xlsx,.csv" hidden multiple>
+  <input id="backupPicker" type="file" accept=".json" hidden>
+
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js" integrity="sha512-XMVd28F1oH/O71fzwBnV7HucLxVwtxf26XV8P4wPk26EDxuGZ91N8bsOttmnomcCD3CS5ZMRL50H0GgOHvegtg==" crossorigin="anonymous"></script>
+  <script src="https://cdn.plot.ly/plotly-3.3.1.min.js" integrity="sha384-SsOMajmLeeY81sOzGCn88NjTdDwa+nz3Lb1ZNouSdXAz5TBsvD+Pwgf1Iqtxns6c" crossorigin="anonymous"></script>
+  <script src="app.js"></script>
+</body>
+</html>
