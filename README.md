@@ -12,3 +12,5 @@ Static test deployment of the Systems Navigator revenue analysis tool.
 ## Production direction
 
 For the multi-user production version, use authenticated access and a central database with role-based permissions and audit logging.
+
+Deployment trigger: 2026-08-20.
