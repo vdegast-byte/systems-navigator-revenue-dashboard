@@ -8,29 +8,42 @@
     try{
       Plotly.restyle(chart,{
         'marker.color':'#ffffff',
-        'marker.line.color':'#949797',
-        'marker.line.width':1.5,
+        'marker.line.color':'#777c80',
+        'marker.line.width':1.8,
         'marker.pattern.shape':'/',
-        'marker.pattern.fgcolor':'#949797',
+        'marker.pattern.fgcolor':'#777c80',
         'marker.pattern.bgcolor':'#ffffff',
-        'marker.pattern.size':10,
-        'marker.pattern.solidity':0.52,
+        'marker.pattern.size':14,
+        'marker.pattern.solidity':0.74,
         'marker.pattern.fillmode':'replace',
-        'textfont.color':'#343941'
+        'textposition':'outside',
+        'texttemplate':'<b>%{text}</b>',
+        'textfont.color':'#343941',
+        'textfont.size':13,
+        'cliponaxis':false
       },[0]);
       if(chart.data.length>1){
         Plotly.restyle(chart,{
           'marker.color':'#13adb6',
           'marker.line.color':'#0b4447',
-          'marker.line.width':1,
+          'marker.line.width':1.1,
           'marker.pattern.shape':'',
           'marker.pattern.fgcolor':'#13adb6',
           'marker.pattern.bgcolor':'#13adb6',
           'marker.pattern.solidity':1,
           'marker.pattern.fillmode':'replace',
-          'textfont.color':'#ffffff'
+          'textposition':'outside',
+          'texttemplate':'<b>%{text}</b>',
+          'textfont.color':'#0b4447',
+          'textfont.size':13,
+          'cliponaxis':false
         },[1]);
       }
+      Plotly.relayout(chart,{
+        'margin.t':48,
+        'uniformtext.minsize':12,
+        'uniformtext.mode':'show'
+      });
     }catch(e){console.debug('Quarter chart refinement skipped',e)}
   }
 
