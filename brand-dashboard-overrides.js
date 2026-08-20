@@ -1,9 +1,7 @@
 (function(){
   if(typeof mgmtRender!=='function')return;
   const originalMgmtRender=mgmtRender;
-  const brand=window.DropboardBrand||{
-    teal:'#13adb6',deepTeal:'#0b4447',coral:'#e25e59',grey:'#949797',dark:'#343941',lightGrey:'#d6d7d9'
-  };
+  const brand=window.DropboardBrand||{teal:'#13adb6',deepTeal:'#0b4447',coral:'#e25e59',grey:'#949797',dark:'#343941',lightGrey:'#d6d7d9'};
 
   function productGroupColor(group){
     const g=String(group||'').trim().toLowerCase();
@@ -17,25 +15,14 @@
 
   function brandManagementTreemap(){
     const target=document.getElementById('mgmtCustomerTreemap');
-    if(!target||!window.Plotly||!state?.rows?.length)return;
-
-    const base=typeof mgmtBaseRows==='function'?mgmtBaseRows():state.rows;
-    const year=typeof mgmtYear==='function'?mgmtYear(base):Math.max(...base.map(r=>Number((r.date||'').slice(0,4))).filter(Boolean));
-    const rows=base.filter(r=>(r.date||'').startsWith(String(year)));
-    const dates=rows.map(r=>r.date).filter(Boolean).sort();
-    if(!dates.length)return;
-    const cutoff=dates.at(-1);
-    const current=rows.filter(r=>r.date<=cutoff);
-
-    // Use exactly the same customer ordering as the original treemap render.
-    const customerMix=typeof mgmtCustomerMix==='function'?mgmtCustomerMix(current):[];
-    const colors=customerMix.map(item=>productGroupColor(item.group));
-
-    if(colors.length){
+    if(!target||!window.Plotly)return;
+    const trace=target.data?.[0];
+    const groups=Array.isArray(trace?.customdata)?trace.customdata:[];
+    if(groups.length){
+      const colors=groups.map(productGroupColor);
       try{Plotly.restyle(target,{'marker.colors':[colors]});}
       catch(e){console.debug('Brand treemap restyle skipped',e)}
     }
-
     const legend=document.querySelector('.mgmt-product-legend');
     if(legend){
       legend.querySelectorAll('span').forEach(item=>{
