@@ -17,6 +17,7 @@
   }
   function pct(value){return Number.isFinite(value)?new Intl.NumberFormat('nl-NL',{style:'percent',maximumFractionDigits:1}).format(value):'–'}
   function growth(current,previous){return previous?((current-previous)/Math.abs(previous)):null}
+  function revenue(rows){return rows.reduce((sum,r)=>sum+(Number(r.revenue)||0),0)}
 
   function typeColor(type){
     const b=window.DropboardBrand||{teal:'#13adb6',deepTeal:'#0b4447',coral:'#e25e59',grey:'#949797',dark:'#343941',lightGrey:'#d6d7d9'};
@@ -37,21 +38,69 @@
   function resolveSelectedYear(rows){
     const years=availableYears(rows);
     if(!years.length)return null;
+    const select=$('filterYear');
+    const selectedFromUi=Number(select?.value);
+    if(selectedFromUi&&years.includes(selectedFromUi))selectedYear=selectedFromUi;
     const calendar=new Date().getFullYear();
     if(selectedYear&&years.includes(selectedYear))return selectedYear;
     selectedYear=years.includes(calendar)?calendar:years[0];
     return selectedYear;
   }
 
-  function renderYearSelector(root,years,year){
-    const hero=root?.querySelector('.mgmt-hero');
-    if(!hero)return;
-    const existing=hero.querySelector('.mgmt-period-badge');
-    const markup=`<div class="mgmt-year-select-wrap"><label for="mgmtYearSelect">Jaar</label><select id="mgmtYearSelect" class="mgmt-year-select">${years.map(y=>`<option value="${y}"${y===year?' selected':''}>${y}</option>`).join('')}</select></div>`;
-    if(existing)existing.outerHTML=markup;
-    else hero.insertAdjacentHTML('beforeend',markup);
-    const select=$('mgmtYearSelect');
-    if(select)select.onchange=()=>{selectedYear=Number(select.value);mgmtRender()};
+  function renderTopYearFilter(years,year){
+    const field=document.querySelector('.year-filter');
+    const select=$('filterYear');
+    if(!field||!select)return;
+    field.classList.remove('hidden');
+    select.innerHTML=years.map(y=>`<option value="${y}"${y===year?' selected':''}>${y}</option>`).join('');
+    select.value=String(year);
+    select.onchange=()=>{selectedYear=Number(select.value);mgmtRender()};
+  }
+
+  function updateCustomerMetric(root,currentRows,previousRows,previousYear){
+    if(!root)return;
+    const metric=[...root.querySelectorAll('.mgmt-metrics .metric')].find(card=>(card.querySelector('.label')?.textContent||'').includes('Klanten met omzet'));
+    if(!metric)return;
+    const currentCustomers=new Set(currentRows.map(r=>mgmtCustomer(r)).filter(Boolean));
+    const previousCustomers=new Set(previousRows.map(r=>mgmtCustomer(r)).filter(Boolean));
+    const avg=currentCustomers.size?revenue(currentRows)/currentCustomers.size:0;
+    const value=metric.querySelector('.value');
+    const sub=metric.querySelector('.sub');
+    if(value)value.textContent=String(currentCustomers.size);
+    if(sub)sub.textContent=`${previousCustomers.size} in ${previousYear} · gemiddeld ${eur(avg)} per klant`;
+  }
+
+  function hatchQuarterChart(){
+    const chart=$('mgmtQuarterChart');
+    if(!chart||!window.Plotly||!chart.data?.length)return;
+    const previousStyle={
+      'marker.color':'#ffffff',
+      'marker.line.color':'#949797',
+      'marker.line.width':1.2,
+      'marker.pattern.shape':'/',
+      'marker.pattern.fgcolor':'#949797',
+      'marker.pattern.bgcolor':'#ffffff',
+      'marker.pattern.size':8,
+      'marker.pattern.solidity':0.22,
+      'marker.pattern.fillmode':'replace',
+      'textfont.color':'#343941'
+    };
+    const currentStyle={
+      'marker.color':'#f4fbfb',
+      'marker.line.color':'#13adb6',
+      'marker.line.width':1.2,
+      'marker.pattern.shape':'\\',
+      'marker.pattern.fgcolor':'#13adb6',
+      'marker.pattern.bgcolor':'#f4fbfb',
+      'marker.pattern.size':8,
+      'marker.pattern.solidity':0.24,
+      'marker.pattern.fillmode':'replace',
+      'textfont.color':'#343941'
+    };
+    try{
+      Plotly.restyle(chart,previousStyle,[0]);
+      if(chart.data.length>1)Plotly.restyle(chart,currentStyle,[1]);
+    }catch(e){console.debug('Quarter hatch styling skipped',e)}
   }
 
   function renderProductTypeChart(currentRows,previousRows,year){
@@ -114,13 +163,15 @@
       const year=resolveSelectedYear(rawBase);
       if(!year)return baseRender.apply(this,arguments);
 
+      renderTopYearFilter(years,year);
       const yearRows=rawBase.filter(r=>(r.date||'').startsWith(String(year)));
       const dates=yearRows.map(r=>r.date).filter(Boolean).sort();
       if(!dates.length)return baseRender.apply(this,arguments);
 
       const lastDate=dates.at(-1),priorYear=year-1,priorCutoff=sameDatePriorYear(lastDate,priorYear);
+      const currentRows=yearRows.filter(r=>r.date<=lastDate);
       const previousRows=rawBase.filter(r=>(r.date||'').startsWith(String(priorYear))&&r.date<=priorCutoff);
-      const filteredBase=[...yearRows,...previousRows];
+      const filteredBase=[...currentRows,...previousRows];
 
       const activeRowsFn=mgmtBaseRows;
       mgmtBaseRows=()=>filteredBase;
@@ -129,12 +180,15 @@
 
       const root=$('managementDashboardView');
       if(root){
-        renderYearSelector(root,years,year);
-        renderProductTypeChart(yearRows.filter(r=>r.date<=lastDate),previousRows,year);
+        const heroBadge=root.querySelector('.mgmt-period-badge');
+        if(heroBadge)heroBadge.textContent=`${year} YTD · t/m ${lastDate.slice(5)}`;
+        updateCustomerMetric(root,currentRows,previousRows,priorYear);
+        hatchQuarterChart();
+        renderProductTypeChart(currentRows,previousRows,year);
       }
       return result;
     }catch(e){
-      console.error('Management year selector enhancement failed; using base dashboard',e);
+      console.error('Management dashboard enhancement failed; using base dashboard',e);
       try{mgmtBaseRows=baseRowsFn}catch(_){}
       return baseRender.apply(this,arguments);
     }
