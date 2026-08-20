@@ -9,7 +9,7 @@
     const g=String(group||'').trim().toLowerCase();
     if(!g||g==='onbekend'||g==='unknown')return brand.lightGrey||'#d6d7d9';
     if(g.includes('dropboard'))return brand.teal||'#13adb6';
-    if(g.includes('scenario navigator')||g==='scenario' || g.includes('navigator'))return brand.deepTeal||'#0b4447';
+    if(g.includes('scenario navigator')||g==='scenario'||g.includes('navigator'))return brand.deepTeal||'#0b4447';
     if(g.includes('simulation')||g.includes('simio')||g.includes('arena')||g.includes('consult'))return brand.dark||'#343941';
     if(g.includes('other')||g.includes('overig'))return brand.grey||'#949797';
     return brand.grey||'#949797';
@@ -18,6 +18,7 @@
   function brandManagementTreemap(){
     const target=document.getElementById('mgmtCustomerTreemap');
     if(!target||!window.Plotly||!state?.rows?.length)return;
+
     const base=typeof mgmtBaseRows==='function'?mgmtBaseRows():state.rows;
     const year=typeof mgmtYear==='function'?mgmtYear(base):Math.max(...base.map(r=>Number((r.date||'').slice(0,4))).filter(Boolean));
     const rows=base.filter(r=>(r.date||'').startsWith(String(year)));
@@ -25,24 +26,15 @@
     if(!dates.length)return;
     const cutoff=dates.at(-1);
     const current=rows.filter(r=>r.date<=cutoff);
-    const mix=new Map();
 
-    current.forEach(r=>{
-      const customer=typeof mgmtCustomer==='function'?mgmtCustomer(r):(r.customer||r.account||'Onbekend');
-      const group=clean(r.group)||'Onbekend';
-      const value=Number(r.revenue)||0;
-      if(!mix.has(customer))mix.set(customer,new Map());
-      const m=mix.get(customer);m.set(group,(m.get(group)||0)+value);
-    });
+    // Use exactly the same customer ordering as the original treemap render.
+    const customerMix=typeof mgmtCustomerMix==='function'?mgmtCustomerMix(current):[];
+    const colors=customerMix.map(item=>productGroupColor(item.group));
 
-    const colors=[];
-    [...mix.entries()].forEach(([customer,m])=>{
-      const total=[...m.values()].reduce((a,b)=>a+b,0);if(total<=0)return;
-      const dominant=[...m.entries()].sort((a,b)=>b[1]-a[1])[0]?.[0]||'Onbekend';
-      colors.push(productGroupColor(dominant));
-    });
-
-    if(colors.length)try{Plotly.restyle(target,{'marker.colors':[colors]});}catch(e){console.debug('Brand treemap restyle skipped',e)}
+    if(colors.length){
+      try{Plotly.restyle(target,{'marker.colors':[colors]});}
+      catch(e){console.debug('Brand treemap restyle skipped',e)}
+    }
 
     const legend=document.querySelector('.mgmt-product-legend');
     if(legend){
