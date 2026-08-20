@@ -8,6 +8,7 @@
   <title>Systems Navigator – Omzetanalyse</title>
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="filters.css" />
+  <link rel="stylesheet" href="saas.css" />
 </head>
 <body>
   <div id="appShell">
@@ -19,6 +20,7 @@
 
       <nav class="nav" id="mainNav">
         <button data-view="dashboard" class="active">Dashboard</button>
+        <button data-view="saas">SaaS analyse</button>
         <button data-view="analysis">Analyses</button>
         <button data-view="invoices">Facturen & tags</button>
         <button data-view="import">Import & beheer</button>
@@ -85,6 +87,7 @@
       </section>
 
       <section id="dashboardView" class="view"></section>
+      <section id="saasView" class="view hidden"></section>
       <section id="analysisView" class="view hidden"></section>
       <section id="invoicesView" class="view hidden"></section>
       <section id="importView" class="view hidden"></section>
@@ -100,5 +103,6 @@
   <script src="app.js"></script>
   <script src="filter-ui.js"></script>
   <script src="quarter-filter.js"></script>
+  <script src="saas-dashboard.js"></script>
 </body>
 </html>
