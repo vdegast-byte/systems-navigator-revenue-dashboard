@@ -5,6 +5,6 @@ window.addEventListener('DOMContentLoaded',()=>{
     const title=document.getElementById('pageTitle');
     const subtitle=document.getElementById('pageSubtitle');
     if(title)title.textContent='Revenue input';
-    if(subtitle)subtitle.textContent='Beheer gerealiseerde facturen en voeg tags toe voor omzetanalyse.';
+    if(subtitle)subtitle.textContent='Importeer nieuwe kwartaaldata en controleer gerealiseerde omzet, klant- en classificatiegegevens.';
   });
 });
