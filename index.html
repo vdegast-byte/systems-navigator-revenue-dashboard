@@ -9,54 +9,34 @@
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="filters.css" />
   <link rel="stylesheet" href="saas.css" />
+  <link rel="stylesheet" href="recurring-forecast.css" />
 </head>
 <body>
   <div id="appShell">
     <aside class="sidebar">
-      <div class="brand">
-        <div class="brand-mark">SN</div>
-        <div><strong>Omzetanalyse</strong><span>Systems Navigator</span></div>
-      </div>
-
+      <div class="brand"><div class="brand-mark">SN</div><div><strong>Omzetanalyse</strong><span>Systems Navigator</span></div></div>
       <nav class="nav" id="mainNav">
         <button data-view="dashboard" class="active">Dashboard</button>
         <button data-view="saas">SaaS analyse</button>
+        <button data-view="dropboardForecast">Dropboard forecast</button>
+        <button data-view="snForecast">SN SaaS forecast</button>
+        <button data-view="totalForecast">Total forecast</button>
         <button data-view="analysis">Analyses</button>
         <button data-view="invoices">Facturen & tags</button>
         <button data-view="import">Import & beheer</button>
       </nav>
-
-      <div class="sidebar-note">
-        <span class="status-dot"></span>
-        Testomgeving
-        <small>Data blijft lokaal in je browser.</small>
-      </div>
+      <div class="sidebar-note"><span class="status-dot"></span>Testomgeving<small>Data blijft lokaal in je browser.</small></div>
     </aside>
 
     <main class="main">
       <header class="topbar">
-        <div>
-          <h1 id="pageTitle">Dashboard</h1>
-          <p id="pageSubtitle">Gerealiseerde omzet op basis van geïmporteerde facturen.</p>
-        </div>
-        <div class="top-actions">
-          <button id="quickImport">Facturen importeren</button>
-          <button id="exportFiltered" class="secondary">Export CSV</button>
-        </div>
+        <div><h1 id="pageTitle">Dashboard</h1><p id="pageSubtitle">Gerealiseerde omzet op basis van geïmporteerde facturen.</p></div>
+        <div class="top-actions"><button id="quickImport">Facturen importeren</button><button id="exportFiltered" class="secondary">Export CSV</button></div>
       </header>
 
       <section class="filter-shell" id="filterShell" aria-label="Dashboardfilters">
         <div class="filter-primary">
-          <div class="filter-field period-field">
-            <span class="filter-label">Periode</span>
-            <select id="filterPreset" class="filter-select-single">
-              <option value="all">Alle perioden</option>
-              <option value="ytd">Dit jaar (YTD)</option>
-              <option value="previous">Vorig jaar</option>
-              <option value="last12">Laatste 12 maanden</option>
-              <option value="custom">Aangepaste periode</option>
-            </select>
-          </div>
+          <div class="filter-field period-field"><span class="filter-label">Periode</span><select id="filterPreset" class="filter-select-single"><option value="all">Alle perioden</option><option value="ytd">Dit jaar (YTD)</option><option value="previous">Vorig jaar</option><option value="last12">Laatste 12 maanden</option><option value="custom">Aangepaste periode</option></select></div>
           <div class="filter-field quarter-filter"><span class="filter-label">Kwartaal</span><select id="filterQuarter" multiple data-label="Kwartaal" data-placeholder="Alle kwartalen"></select></div>
           <div class="filter-field wide"><span class="filter-label">Bedrijf</span><select id="filterCompany" multiple data-label="Bedrijf" data-placeholder="Alle bedrijven"></select></div>
           <div class="filter-field customer-filter"><span class="filter-label">Klant</span><select id="filterCustomer" multiple data-label="Klant" data-placeholder="Alle klanten"></select></div>
@@ -65,45 +45,22 @@
           <button id="moreFilters" class="filter-more secondary" type="button" aria-expanded="false"><span>Meer filters</span><span class="chevron">⌄</span></button>
           <button id="clearFilters" class="filter-clear" type="button">Filters wissen</button>
         </div>
-
         <div id="advancedFilters" class="filter-advanced hidden">
-          <div class="filter-field date-field"><span class="filter-label">Van</span><input id="filterStart" type="date"></div>
-          <div class="filter-field date-field"><span class="filter-label">Tot</span><input id="filterEnd" type="date"></div>
-          <div class="filter-field"><span class="filter-label">Account</span><select id="filterAccount" multiple data-label="Account" data-placeholder="Alle accounts"></select></div>
-          <div class="filter-field"><span class="filter-label">Industrie</span><select id="filterIndustry" multiple data-label="Industrie" data-placeholder="Alle industrieën"></select></div>
-          <div class="filter-field"><span class="filter-label">Land</span><select id="filterCountry" multiple data-label="Land" data-placeholder="Alle landen"></select></div>
-          <div class="filter-field"><span class="filter-label">Leverancier</span><select id="filterSupplier" multiple data-label="Leverancier" data-placeholder="Alle leveranciers"></select></div>
-          <div class="filter-field search-field"><span class="filter-label">Zoeken</span><input id="filterSearch" type="search" placeholder="Klant, factuur of omschrijving"></div>
+          <div class="filter-field date-field"><span class="filter-label">Van</span><input id="filterStart" type="date"></div><div class="filter-field date-field"><span class="filter-label">Tot</span><input id="filterEnd" type="date"></div>
+          <div class="filter-field"><span class="filter-label">Account</span><select id="filterAccount" multiple data-label="Account" data-placeholder="Alle accounts"></select></div><div class="filter-field"><span class="filter-label">Industrie</span><select id="filterIndustry" multiple data-label="Industrie" data-placeholder="Alle industrieën"></select></div><div class="filter-field"><span class="filter-label">Land</span><select id="filterCountry" multiple data-label="Land" data-placeholder="Alle landen"></select></div><div class="filter-field"><span class="filter-label">Leverancier</span><select id="filterSupplier" multiple data-label="Leverancier" data-placeholder="Alle leveranciers"></select></div><div class="filter-field search-field"><span class="filter-label">Zoeken</span><input id="filterSearch" type="search" placeholder="Klant, factuur of omschrijving"></div>
         </div>
-
-        <div id="activeFilters" class="active-filters hidden" aria-live="polite"></div>
-        <select id="filterTag" multiple hidden></select>
+        <div id="activeFilters" class="active-filters hidden" aria-live="polite"></div><select id="filterTag" multiple hidden></select>
       </section>
 
-      <section id="emptyState" class="empty hidden">
-        <div class="empty-icon">↥</div><h2>Nog geen facturen geïmporteerd</h2>
-        <p>Upload je bestaande Excelbestand en kies het tabblad <strong>Combined</strong>. De analyse gebeurt volledig in deze browser.</p>
-        <button id="emptyImport">Excel / CSV importeren</button>
-      </section>
-
-      <section id="dashboardView" class="view"></section>
-      <section id="saasView" class="view hidden"></section>
-      <section id="analysisView" class="view hidden"></section>
-      <section id="invoicesView" class="view hidden"></section>
-      <section id="importView" class="view hidden"></section>
+      <section id="emptyState" class="empty hidden"><div class="empty-icon">↥</div><h2>Nog geen facturen geïmporteerd</h2><p>Upload je bestaande Excelbestand en kies het tabblad <strong>Combined</strong>. De analyse gebeurt volledig in deze browser.</p><button id="emptyImport">Excel / CSV importeren</button></section>
+      <section id="dashboardView" class="view"></section><section id="saasView" class="view hidden"></section><section id="dropboardForecastView" class="view hidden"></section><section id="snForecastView" class="view hidden"></section><section id="totalForecastView" class="view hidden"></section><section id="analysisView" class="view hidden"></section><section id="invoicesView" class="view hidden"></section><section id="importView" class="view hidden"></section>
     </main>
   </div>
 
   <div id="toast" class="toast hidden"></div>
-  <input id="filePicker" type="file" accept=".xlsx,.csv" hidden multiple>
-  <input id="backupPicker" type="file" accept=".json" hidden>
-
+  <input id="filePicker" type="file" accept=".xlsx,.csv" hidden multiple><input id="backupPicker" type="file" accept=".json" hidden><input id="forecastPicker" type="file" accept=".xlsx" hidden>
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js" integrity="sha512-XMVd28F1oH/O71fzwBnV7HucLxVwtxf26XV8P4wPk26EDxuGZ91N8bsOttmnomcCD3CS5ZMRL50H0GgOHvegtg==" crossorigin="anonymous"></script>
   <script src="https://cdn.plot.ly/plotly-3.3.1.min.js" integrity="sha384-SsOMajmLeeY81sOzGCn88NjTdDwa+nz3Lb1ZNouSdXAz5TBsvD+Pwgf1Iqtxns6c" crossorigin="anonymous"></script>
-  <script src="app.js"></script>
-  <script src="filter-ui.js"></script>
-  <script src="quarter-filter.js"></script>
-  <script src="saas-dashboard.js"></script>
-  <script src="stacked-dashboard.js"></script>
+  <script src="app.js"></script><script src="filter-ui.js"></script><script src="quarter-filter.js"></script><script src="saas-dashboard.js"></script><script src="stacked-dashboard.js"></script><script src="recurring-forecast.js"></script>
 </body>
 </html>
