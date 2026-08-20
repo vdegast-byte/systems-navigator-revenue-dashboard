@@ -4,6 +4,7 @@
   const baseRender=mgmtRender;
   const baseRowsFn=mgmtBaseRows;
   let rangeState=null;
+  let selectedYear=null;
 
   function dateMs(date){
     const p=String(date||'').split('-').map(Number);
@@ -35,6 +36,7 @@
   }
   function pct(value){return Number.isFinite(value)?new Intl.NumberFormat('nl-NL',{style:'percent',maximumFractionDigits:1}).format(value):'–'}
   function growth(current,previous){return previous?((current-previous)/Math.abs(previous)):null}
+  function yearsFromRows(rows){return [...new Set(rows.map(r=>Number((r.date||'').slice(0,4))).filter(Boolean))].sort((a,b)=>a-b)}
 
   function typeColor(type){
     const b=window.DropboardBrand||{teal:'#13adb6',deepTeal:'#0b4447',coral:'#e25e59',grey:'#949797',dark:'#343941',lightGrey:'#d6d7d9'};
@@ -64,16 +66,26 @@
     return rangeState;
   }
 
-  function rangeMarkup(range){
+  function rangeMarkup(range,years){
     const maxDays=Math.max(1,dayDiff(range.min,range.max));
     const startValue=dayDiff(range.min,range.start);
     const endValue=dayDiff(range.min,range.end);
     const left=(startValue/maxDays)*100;
     const right=(endValue/maxDays)*100;
+    const yearIndex=years.indexOf(range.year);
+    const hasPrevious=yearIndex>0,hasNext=yearIndex>=0&&yearIndex<years.length-1;
     return `<div class="mgmt-enh-range card">
       <div class="mgmt-enh-range-head">
-        <div><div class="eyebrow">Date range</div><h3>Analyseperiode</h3><p>Standaard: 1 januari tot en met de laatst beschikbare omzetdatum van dit jaar.</p></div>
-        <div class="mgmt-enh-range-actions"><strong id="mgmtEnhRangeLabel">${esc(fmtDate(range.start))} – ${esc(fmtDate(range.end))}</strong><button id="mgmtEnhRangeReset" class="secondary" type="button">Dit jaar</button></div>
+        <div><div class="eyebrow">Date range</div><h3>Analyseperiode</h3><p>Kies eerst het jaar en verfijn daarna de periode met de twee sliders.</p></div>
+        <div class="mgmt-enh-range-actions">
+          <div class="mgmt-enh-year-nav">
+            <button id="mgmtEnhPrevYear" class="secondary mgmt-enh-year-arrow" type="button" ${hasPrevious?'':'disabled'} aria-label="Vorig jaar">←</button>
+            <select id="mgmtEnhYearSelect" class="mgmt-enh-year-select" aria-label="Jaar">${years.map(y=>`<option value="${y}" ${y===range.year?'selected':''}>${y}</option>`).join('')}</select>
+            <button id="mgmtEnhNextYear" class="secondary mgmt-enh-year-arrow" type="button" ${hasNext?'':'disabled'} aria-label="Volgend jaar">→</button>
+          </div>
+          <strong id="mgmtEnhRangeLabel">${esc(fmtDate(range.start))} – ${esc(fmtDate(range.end))}</strong>
+          <button id="mgmtEnhRangeReset" class="secondary" type="button">Dit jaar</button>
+        </div>
       </div>
       <div id="mgmtEnhRangeControl" class="mgmt-enh-range-control" style="--range-left:${left}%;--range-right:${right}%">
         <div class="mgmt-enh-range-track"></div><div class="mgmt-enh-range-fill"></div>
@@ -84,8 +96,9 @@
     </div>`;
   }
 
-  function bindRange(range){
+  function bindRange(range,years,defaultYear){
     const start=$('mgmtEnhRangeStart'),end=$('mgmtEnhRangeEnd'),label=$('mgmtEnhRangeLabel'),control=$('mgmtEnhRangeControl'),reset=$('mgmtEnhRangeReset');
+    const prev=$('mgmtEnhPrevYear'),next=$('mgmtEnhNextYear'),yearSelect=$('mgmtEnhYearSelect');
     if(!start||!end||!control)return;
     const max=Number(start.max)||1;
     const sync=(source,rerender)=>{
@@ -100,11 +113,20 @@
       if(label)label.textContent=`${fmtDate(rangeState.start)} – ${fmtDate(rangeState.end)}`;
       if(rerender)mgmtRender();
     };
+    const switchYear=(year)=>{
+      if(!years.includes(year))return;
+      selectedYear=year;
+      rangeState=null;
+      mgmtRender();
+    };
     start.oninput=()=>sync(start,false);
     end.oninput=()=>sync(end,false);
     start.onchange=()=>sync(start,true);
     end.onchange=()=>sync(end,true);
-    if(reset)reset.onclick=()=>{rangeState.start=range.min;rangeState.end=range.max;mgmtRender()};
+    if(yearSelect)yearSelect.onchange=()=>switchYear(Number(yearSelect.value));
+    if(prev)prev.onclick=()=>{const i=years.indexOf(range.year);if(i>0)switchYear(years[i-1])};
+    if(next)next.onclick=()=>{const i=years.indexOf(range.year);if(i>=0&&i<years.length-1)switchYear(years[i+1])};
+    if(reset)reset.onclick=()=>{selectedYear=defaultYear;rangeState=null;mgmtRender()};
   }
 
   function renderProductTypeChart(currentRows,previousRows,year){
@@ -134,27 +156,24 @@
     if(oldList)oldList.outerHTML='<div id="mgmtEnhProductTypeChart" class="mgmt-enh-product-chart"></div>';
     else if(!$('mgmtEnhProductTypeChart'))card.insertAdjacentHTML('beforeend','<div id="mgmtEnhProductTypeChart" class="mgmt-enh-product-chart"></div>');
     if(!groupNames.length||!typeNames.length){$('mgmtEnhProductTypeChart').innerHTML='<div class="muted">Geen productgroep- of producttypedata voor deze selectie.</div>';return}
-    const traces=typeNames.map(type=>({
-      type:'bar',orientation:'h',name:type,y:groupNames,
-      x:groupNames.map(group=>groups.get(group)?.get(type)||0),
-      marker:{color:typeColor(type)},
-      hovertemplate:`<b>%{y}</b><br>${esc(type)}: €%{x:,.0f}<extra></extra>`
-    }));
+    const traces=typeNames.map(type=>({type:'bar',orientation:'h',name:type,y:groupNames,x:groupNames.map(group=>groups.get(group)?.get(type)||0),marker:{color:typeColor(type)},hovertemplate:`<b>%{y}</b><br>${esc(type)}: €%{x:,.0f}<extra></extra>`}));
     const maxTotal=Math.max(...groupNames.map(g=>Math.max(0,groupTotals.get(g)||0)),1);
     const annotations=groupNames.map(group=>{
       const value=groupTotals.get(group)||0,prior=prevTotals.get(group)||0,delta=growth(value,prior);
       return {x:Math.max(0,value)+maxTotal*.025,y:group,text:`${eur(value)}${delta==null?'':` · ${delta>=0?'+':''}${pct(delta)} YoY`}`,showarrow:false,xanchor:'left',font:{size:10,color:delta==null?'#777c80':delta>=0?'#0b4447':'#e25e59'}};
     });
-    try{
-      Plotly.newPlot('mgmtEnhProductTypeChart',traces,{barmode:'stack',height:Math.max(340,groupNames.length*52+130),margin:{l:135,r:135,t:10,b:85},paper_bgcolor:'transparent',plot_bgcolor:'transparent',legend:{orientation:'h',y:-.2,x:0},xaxis:{tickprefix:'€',tickformat:'~s',range:[0,maxTotal*1.3],zeroline:false},yaxis:{autorange:'reversed'},annotations},{displayModeBar:false,responsive:true});
-    }catch(e){console.error('Producttype chart failed',e)}
+    try{Plotly.newPlot('mgmtEnhProductTypeChart',traces,{barmode:'stack',height:Math.max(340,groupNames.length*52+130),margin:{l:135,r:135,t:10,b:85},paper_bgcolor:'transparent',plot_bgcolor:'transparent',legend:{orientation:'h',y:-.2,x:0},xaxis:{tickprefix:'€',tickformat:'~s',range:[0,maxTotal*1.3],zeroline:false},yaxis:{autorange:'reversed'},annotations},{displayModeBar:false,responsive:true})}
+    catch(e){console.error('Producttype chart failed',e)}
   }
 
   mgmtRender=function(){
     let rawBase=[];
     try{
       rawBase=baseRowsFn();
-      const year=mgmtYear(rawBase);
+      const years=yearsFromRows(rawBase);
+      const defaultYear=mgmtYear(rawBase);
+      if(!selectedYear||!years.includes(selectedYear))selectedYear=defaultYear;
+      const year=selectedYear;
       const yearRows=rawBase.filter(r=>(r.date||'').startsWith(String(year)));
       const dates=yearRows.map(r=>r.date).filter(Boolean).sort();
       if(!dates.length)return baseRender.apply(this,arguments);
@@ -170,8 +189,8 @@
       try{result=baseRender.apply(this,arguments)}finally{mgmtBaseRows=activeRowsFn}
       const root=$('managementDashboardView');
       if(root){
-        root.insertAdjacentHTML('afterbegin',rangeMarkup(range));
-        bindRange(range);
+        root.insertAdjacentHTML('afterbegin',rangeMarkup(range,years));
+        bindRange(range,years,defaultYear);
         const hero=root.querySelector('.mgmt-hero p');
         if(hero)hero.innerHTML=`Gerealiseerde omzet van <strong>${esc(fmtDate(range.start))}</strong> t/m <strong>${esc(fmtDate(range.end))}</strong>, vergeleken met dezelfde periode in ${priorYear}.`;
         const badge=root.querySelector('.mgmt-period-badge');
