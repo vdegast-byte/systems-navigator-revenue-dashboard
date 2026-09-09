@@ -3,10 +3,9 @@
   const brand=window.DropboardBrand||{teal:'#13adb6',deepTeal:'#0b4447',coral:'#e25e59',grey:'#949797',dark:'#343941',lightGrey:'#d6d7d9'};
   let productLevel='group';
 
-  const entityOrder=['VTTI','Eurotank Terminal','VTTV','ATT','ATB','ATPC','ETA','ETT'];
+  const entityOrder=['VTTI','VTTV','ATT','ATB','ATPC','ETA','ETT'];
   const entityColors={
     'VTTI':brand.teal||'#13adb6',
-    'Eurotank Terminal':brand.deepTeal||'#0b4447',
     'VTTV':brand.dark||'#343941',
     'ATT':brand.grey||'#949797',
     'ATB':brand.coral||'#e25e59',
@@ -21,9 +20,14 @@
   function startsEntity(name,alias){return name===alias||name.startsWith(alias+' ')}
   function canonicalEntity(row){
     const values=[normalizeName(row.customer),normalizeName(row.account)].filter(Boolean);
+
+    // Full account names take precedence so ETA and ETT can never be merged.
+    if(values.some(v=>startsEntity(v,'eurotank terminal')))return 'ETA';
+    if(values.some(v=>startsEntity(v,'euro tank terminal')))return 'ETT';
+
     const checks=[
-      ['Eurotank Terminal',['eurotank terminal','euro tank terminal']],
-      ['VTTV',['vttv']],['ATT',['att']],['ATB',['atb']],['ATPC',['atpc']],['ETA',['eta']],['ETT',['ett']],['VTTI',['vtti']]
+      ['VTTV',['vttv']],['ATT',['att']],['ATB',['atb']],['ATPC',['atpc']],
+      ['ETA',['eta']],['ETT',['ett']],['VTTI',['vtti']]
     ];
     for(const [label,aliases] of checks){
       if(values.some(v=>aliases.some(a=>startsEntity(v,a))))return label;
@@ -69,7 +73,7 @@
 
   function renderDashboard(){
     const rows=vttiRows(),root=$('vttiRevenueView');if(!root)return;
-    if(!rows.length){root.innerHTML='<div class="card">Geen omzetregels gevonden voor VTTI, Eurotank Terminal, VTTV, ATT, ATB, ATPC, ETA of ETT binnen de gekozen filters.</div>';return}
+    if(!rows.length){root.innerHTML='<div class="card">Geen omzetregels gevonden voor VTTI, VTTV, ATT, ATB, ATPC, Eurotank Terminal (ETA) of Euro Tank Terminal (ETT) binnen de gekozen filters.</div>';return}
 
     const years=[...new Set(rows.map(r=>(r.date||'').slice(0,4)).filter(Boolean))].sort();
     const total=revenue(rows),entities=aggregate(rows,r=>r._vttiEntity),products=aggregate(rows,productName),latestYear=years.at(-1),latestRows=rows.filter(r=>(r.date||'').startsWith(latestYear));
@@ -77,8 +81,8 @@
 
     root.innerHTML=`
       <div class="vtti-head card">
-        <div><div class="eyebrow">Actual revenue · VTTI group</div><h2>VTTI & terminal revenue</h2><p>Omzet voor VTTI, Eurotank Terminal, VTTV, ATT, ATB, ATPC, ETA en ETT op basis van Customer/Account.</p></div>
-        <div class="vtti-scope">8 entiteiten</div>
+        <div><div class="eyebrow">Actual revenue · VTTI group</div><h2>VTTI & terminal revenue</h2><p>Omzet voor VTTI, VTTV, ATT, ATB, ATPC, <strong>ETA (Eurotank Terminal)</strong> en <strong>ETT (Euro Tank Terminal)</strong> op basis van Customer/Account.</p></div>
+        <div class="vtti-scope">7 accounts</div>
       </div>
       <div class="grid vtti-metrics">
         <div class="metric"><div class="label">Totale omzet selectie</div><div class="value">${eur(total)}</div><div class="sub">${years[0]} – ${latestYear}</div></div>
