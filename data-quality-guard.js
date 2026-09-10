@@ -77,4 +77,31 @@
       return result;
     };
   }
+
+  // The VTTI page is a historical account dashboard. When entering it, start with the full
+  // available history and no customer/account/quarter restriction carried over from another view.
+  // Users can immediately apply those filters again after the page has opened.
+  window.addEventListener('DOMContentLoaded',()=>{
+    const button=document.querySelector('#mainNav button[data-view="vttiRevenue"]');
+    if(!button)return;
+    button.addEventListener('click',()=>{
+      const dates=(state.rows||[]).map(r=>r.date).filter(Boolean).sort();
+      if(dates.length){
+        const start=document.getElementById('filterStart');
+        const end=document.getElementById('filterEnd');
+        const preset=document.getElementById('filterPreset');
+        if(start)start.value=dates[0];
+        if(end)end.value=dates[dates.length-1];
+        if(preset)preset.value='all';
+      }
+
+      ['filterCustomer','filterAccount','filterQuarter'].forEach(id=>{
+        const select=document.getElementById(id);
+        if(!select)return;
+        [...select.options].forEach(option=>option.selected=false);
+        if(typeof syncTrigger==='function')syncTrigger(select);
+      });
+      if(typeof updateChips==='function')updateChips();
+    },{capture:true});
+  });
 })();
