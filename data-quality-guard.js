@@ -52,7 +52,7 @@
   // can still be inspected or backed up.
   if(typeof render==='function'){
     const baseRender=render;
-    const auditedViews=new Set(['dashboard','managementDashboard','dropboardRevenue','vttiRevenue','saas','analysis']);
+    const auditedViews=new Set(['dashboard','managementDashboard','dropboardRevenue','vttiRevenue','saasSoftware','saas','analysis']);
     render=function(){
       if(!auditedViews.has(view))return baseRender.apply(this,arguments);
       const original=state.rows;
